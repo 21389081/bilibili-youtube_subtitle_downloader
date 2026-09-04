@@ -1,6 +1,6 @@
 {
   "name": "subtitle-text-downloader",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,6 +9,10 @@
     "check": "node scripts/check.mjs",
     "package": "node scripts/package.mjs"
   },
-  "devDependencies": { "playwright": "1.62.1" },
-  "engines": { "node": ">=20" }
+  "devDependencies": {
+    "playwright": "1.62.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
 }
