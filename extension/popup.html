@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>字幕下載</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main>
+    <header>
+      <h1>字幕下載</h1>
+      <p class="platforms">YouTube · Bilibili</p>
+    </header>
+    <section id="video-section" aria-labelledby="video-label">
+      <p id="video-label" class="muted">目前影片</p>
+      <h2 id="video-title">正在讀取目前影片…</h2>
+    </section>
+    <div id="status" class="is-empty" role="status" aria-live="polite"></div>
+    <button id="start" class="primary" type="button">開始下載</button>
+    <form id="subtitle-form" hidden>
+      <fieldset>
+        <legend>選擇字幕</legend>
+        <div id="tracks"></div>
+      </fieldset>
+      <button id="download" class="primary" type="submit">下載 TXT</button>
+    </form>
+    <footer>
+      <p>每段一行，不含時間碼</p>
+      <p>儲存位置沿用 Chrome 設定</p>
+    </footer>
+  </main>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

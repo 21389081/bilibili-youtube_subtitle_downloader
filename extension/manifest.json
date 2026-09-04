@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "字幕下載 — YouTube 與 Bilibili",
+  "description": "下載目前影片的現成字幕，移除時間碼，每段一行匯出 TXT。",
+  "version": "0.1.0",
+  "minimum_chrome_version": "119",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "downloads",
+    "storage"
+  ],
+  "action": {
+    "default_title": "字幕下載",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "48": "icons/icon-48.png",
+      "16": "icons/icon-16.png",
+      "128": "icons/icon-128.png",
+      "32": "icons/icon-32.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "icons": {
+    "48": "icons/icon-48.png",
+    "16": "icons/icon-16.png",
+    "128": "icons/icon-128.png",
+    "32": "icons/icon-32.png"
+  }
+}
