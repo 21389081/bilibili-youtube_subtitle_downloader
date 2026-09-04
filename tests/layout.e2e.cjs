@@ -44,6 +44,10 @@ function metrics(page) {
   const { port } = server.address();
   const browser = await chromium.launch({ channel: 'chromium', headless: true });
   try {
+    const bootstrapPage = await browser.newPage({ viewport: { width: 32, height: 700 } });
+    await bootstrapPage.goto(`http://127.0.0.1:${port}`);
+    assert.equal((await metrics(bootstrapPage)).width, 380, 'initial narrow viewport collapsed the popup width');
+    await bootstrapPage.close();
     const page = await browser.newPage({ viewport: { width: 800, height: 900 } });
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
@@ -61,11 +65,15 @@ function metrics(page) {
     assert.deepEqual(loaded, opening, 'loaded subtitles shifted layout');
     assert.equal(await page.locator('.track').count(), 30);
     assert.equal(await page.locator('#tracks').evaluate(element => element.scrollHeight > element.clientHeight), true);
+    const trackBounds = await page.evaluate(() => {
+      const list = document.querySelector('#tracks').getBoundingClientRect();
+      const track = document.querySelector('.track').getBoundingClientRect();
+      return { listRight: list.right, trackRight: track.right };
+    });
+    assert.ok(trackBounds.trackRight <= trackBounds.listRight - 8, `subtitle row overlapped the scrollbar edge: ${JSON.stringify(trackBounds)}`);
     if (process.env.LAYOUT_SCREENSHOT) await page.screenshot({ path: process.env.LAYOUT_SCREENSHOT, clip: { x: 0, y: 0, width: 380, height: 560 } });
-    await page.setViewportSize({ width: 320, height: 700 });
-    assert.equal(await page.evaluate(() => document.body.scrollWidth <= innerWidth), true);
     assert.deepEqual(errors, []);
-    console.log(JSON.stringify({ opening, initialized, loading, loaded, tracks: 30, viewport320: 'no horizontal overflow' }));
+    console.log(JSON.stringify({ bootstrapWidth: 380, opening, initialized, loading, loaded, tracks: 30, trackBounds }));
   } finally {
     await browser.close();
     server.close();
