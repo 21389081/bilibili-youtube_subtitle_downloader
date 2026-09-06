@@ -2,3 +2,5 @@ node_modules/
 dist/
 .qa/
 *.log
+extension.crx
+extension.pem
