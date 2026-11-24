@@ -30,3 +30,18 @@
 測試設定檔的預設下載目錄為專案 `.qa/zen-downloads/`。該目錄、瀏覽器設定檔與任何測試下載內容均不提交到 GitHub，也不放入 Firefox ZIP。
 
 ZIP 未經 Mozilla 簽章，請以暫時附加元件方式測試，或提交 AMO 取得正式簽章後再永久安裝。
+
+## Firefox 0.1.2：修正原始資料夾缺檔
+
+使用者實際載入 `firefox/manifest.json`，並回報介面無法開啟、圖示不顯示。0.1.1 的 `firefox/` 僅有 Manifest 和瀏覽器專用入口，沒有 `popup.html`、CSS、圖示及共用模組；只有 `dist/firefox/` 完整。
+
+依使用者要求，本次不操作瀏覽器。檔案依賴檢查重現相同路徑的錯誤：
+
+```text
+node --test tests/firefox-files.test.js
+Error: Missing extension file: popup.html (referenced by manifest.json)
+```
+
+補齊並提交共用檔案後，相同測試通過。檢查會沿 Manifest、彈窗 HTML 與 ES module imports 確認依賴存在；來源和建置版本均受檢查。Chrome 原始碼未修改。
+
+本次修正涵蓋已確認的介面／圖示缺檔原因，沒有宣稱已完成瀏覽器實際操作或修正先前 YouTube 字幕請求問題。

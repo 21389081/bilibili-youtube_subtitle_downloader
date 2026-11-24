@@ -3,6 +3,11 @@ import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import assert from 'node:assert/strict';
 import { buildFirefox } from './build-firefox.mjs';
+import { validateExtensionFiles } from './validate-extension-files.mjs';
+import { fileURLToPath } from 'node:url';
+
+// Validate the exact folder users may load, before a build can fill missing files.
+await validateExtensionFiles(fileURLToPath(new URL('../firefox/', import.meta.url)));
 
 const { output, manifest } = await buildFirefox();
 assert.equal(manifest.manifest_version, 3);
