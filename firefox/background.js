@@ -1,9 +1,43 @@
 import { identifyVideo, subtitleFilename } from './lib/video.js';
-import { cuesToText, textDataUrl } from './lib/text.js';
+import { cuesToText } from './lib/text.js';
 import { youtubeRequest } from './platforms/youtube.js';
 import { bilibiliRequest } from './platforms/bilibili.js';
 
 const pending = new Set();
+const downloadUrls = new Map();
+
+function releaseDownload(id) {
+  const url = downloadUrls.get(id);
+  if (!url) return;
+  downloadUrls.delete(id);
+  URL.revokeObjectURL(url);
+}
+
+async function downloadText(text, filename, incognito) {
+  // Firefox validates download URLs differently from Chrome. Keep the text in a
+  // Blob owned by this background document, including its UTF-8 BOM.
+  const blob = new Blob(['\uFEFF', text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  try {
+    const id = await browser.downloads.download({ url, filename, conflictAction: 'uniquify', incognito });
+    downloadUrls.set(id, url);
+    // A tiny TXT can finish before download() resolves and before we know its ID.
+    // The global event listener handles later transitions; search covers this race.
+    try {
+      const [item] = await browser.downloads.search({ id });
+      if (['complete', 'interrupted'].includes(item?.state)) releaseDownload(id);
+    } catch { /* A status lookup failure must not report a started download as failed. */ }
+    return id;
+  } catch (error) {
+    URL.revokeObjectURL(url);
+    throw error;
+  }
+}
+
+browser.downloads.onChanged.addListener(delta => {
+  if (['complete', 'interrupted'].includes(delta.state?.current)) releaseDownload(delta.id);
+});
+browser.downloads.onErased.addListener(releaseDownload);
 const sessionKey = tabId => `subtitle:${tabId}`;
 
 async function currentVideo(tabId) {
@@ -61,7 +95,7 @@ async function handle(message) {
       // Keep private downloads in the originating private browsing session.
       const { incognito } = await browser.tabs.get(tabId);
       // Omitting saveAs respects Firefox's download preferences.
-      const downloadId = await browser.downloads.download({ url: textDataUrl(text), filename, conflictAction: 'uniquify', incognito });
+      const downloadId = await downloadText(text, filename, incognito);
       return { downloadId, filename, lines: text.split('\r\n').length - 1 };
     }
     throw new Error('不支援的操作。');

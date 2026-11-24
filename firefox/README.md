@@ -21,7 +21,7 @@ npm.cmd run test:firefox-layout
 npm.cmd run package:firefox
 ```
 
-ZIP：`dist/subtitle-text-downloader-firefox-0.1.3.zip`。壓縮檔根目錄直接包含 `manifest.json`。
+ZIP：`dist/subtitle-text-downloader-firefox-0.1.4.zip`。壓縮檔根目錄直接包含 `manifest.json`。
 
 ## 暫時載入與 Zen 測試
 
@@ -51,6 +51,8 @@ Firefox 私密視窗下載會帶入 `incognito: true`，使該筆下載紀錄歸
 
 驗證範圍與待測清單：[TESTING.md](TESTING.md)。
 
-Firefox 修補版本獨立管理；目前 Firefox 0.1.3 不改動 Chrome 0.1.1。先前已從 `firefox/manifest.json` 暫時載入的使用者，在 `about:debugging` 點「重新載入」即可讀取補齊的檔案。
+Firefox 修補版本獨立管理；目前 Firefox 0.1.4 不改動 Chrome 0.1.1。先前已從 `firefox/manifest.json` 暫時載入的使用者，在 `about:debugging` 點「重新載入」即可讀取補齊的檔案。
 
 Firefox 0.1.3 修正字幕已開啟時的重新載入及讀取流程，錯誤訊息可換行，過長內容可在彈窗內捲動閱讀。
+
+Firefox 0.1.4 改用擴充功能背景頁建立的 Blob URL 儲存 TXT，解決 Firefox 拒絕 `data:` 下載網址的問題；保留 UTF-8 BOM、CRLF、檔名與一般／私密下載設定。

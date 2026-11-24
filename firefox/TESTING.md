@@ -63,3 +63,18 @@ Error: Missing extension file: popup.html (referenced by manifest.json)
 官方 API 依據：[YouTube captions reload](https://developers.google.com/youtube/iframe_api_reference#onApiChange)；HTTP 200 空字幕的上游案例：[yt-dlp #13075](https://github.com/yt-dlp/yt-dlp/issues/13075)。官方 API 說明適用 iframe 播放器；網頁內播放器的實際行為仍須以使用者目前工作階段確認。
 
 原測試只涵蓋重播字幕網址成功的模型，沒有檢查已啟用字幕不觸發新請求的情況；新增的回歸測試鎖定這兩個缺口。YouTube 取得流程與 CSS 現為 Firefox 專用檔案，同步／打包不會把修正覆寫成 Chrome 版本。Chrome 原始碼保留。
+
+## Firefox 0.1.4：下載 API 拒絕 data URL
+
+使用者回報 `Type error for parameter options (Error processing url: Error: Access denied for URL data:...)`。這個錯誤出現在取得及轉換字幕完成後、呼叫 `browser.downloads.download` 的階段。舊版 Firefox 沿用 Chrome 的 data URL，下載 mock 亦無條件接受該網址，因此漏掉瀏覽器的 URL 驗證限制。
+
+修正前 `node --test tests/firefox.test.js` 的一般／私密下載測試會以同一錯誤失敗。現在由擴充功能背景頁建立帶 UTF-8 BOM 的文字 Blob，透過其 Blob URL 下載，沒有從影片頁傳入跨來源 Blob URL。
+
+- 保留 UTF-8 BOM、CRLF、重複字幕段與安全檔名。
+- 保留 incognito、uniquify 及省略 saveAs 的設定。
+- 下載完成、中斷、移除紀錄或建立下載失敗時釋放 Blob URL，下載進行中不提前釋放。
+- 使用完成事件及依 ID 查詢處理「下載在 download() 回傳 ID 前已完成」的競態。
+
+35 項測試通過，包含拒絕 data URL 的回歸、一般／私密下載、Blob 實際編碼位元組、完成前保留、失敗／中斷／移除釋放與提早完成競態。Mozilla lint 零錯誤、零警告。依既有要求未操作使用者瀏覽器；目前工作階段的實際檔案下載仍由使用者驗收。
+
+官方依據：[downloads.download](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/downloads/download) 說明 Blob URL 下載與完成後釋放；[Mozilla bug 1696174](https://bugzilla.mozilla.org/show_bug.cgi?id=1696174) 說明 Blob URL 應在擴充功能背景頁建立，避免網站來源 Blob URL 被拒絕。Chrome 原始碼及其原有 data URL 路徑保持不變。
