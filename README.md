@@ -56,3 +56,7 @@ Windows 打包產物：`dist/subtitle-text-downloader-0.1.0.zip`。安裝時直�
 Chromium 自動測試使用暫存副本授予指定兩站的網站權限，以代替無頭模式無法執行的真實工具列點擊；交付版本維持 `activeTab`，並未加入永久網站權限。真實工具列點擊授權仍屬上述實機驗收項目。
 
 參閱 [隱私說明](PRIVACY.md) 與 [技術依據](docs/implementation-notes.md)。
+
+## Firefox / Zen 桌面版
+
+Firefox 0.1.4 已由專案擁有者實機確認正常，提供獨立來源與打包流程；Chrome 的 `extension/` 原始碼和原有打包命令保留不變。請參閱 [Firefox 安裝、驗證與上架說明](firefox/README.md) 及 [Firefox 隱私政策](firefox/PRIVACY.md)。
