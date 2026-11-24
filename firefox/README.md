@@ -26,7 +26,7 @@ ZIP：`dist/subtitle-text-downloader-firefox-0.1.1.zip`。壓縮檔根目錄直�
 1. 執行 `npm.cmd run build:firefox`。
 2. 開啟 Firefox / Zen 的 `about:debugging#/runtime/this-firefox`。
 3. 選「載入暫時附加元件」，選取 `dist/firefox/manifest.json`。
-4. 開啟 YouTube 或 Bilibili 影片，從擴充功能選單點「字幕下載」，再點「開始下載」。
+4. 開啟 YouTube 或 Bilibili 影片，從擴充功能選單點「字幕下載」，或按 `Alt+Shift+Y` 開啟彈窗，再點「開始下載」。Zen 隱藏擴充功能按鈕時也可使用此快捷鍵。
 5. 私密視窗測試需允許此擴充功能在私密視窗執行；此權限由使用者控制。一般視窗下載不會因此改為私密下載。
 
 也可以用官方開發工具啟動全新測試設定檔，不使用日常登入資料：
@@ -46,3 +46,5 @@ Firefox 私密視窗下載會帶入 `incognito: true`，使該筆下載紀錄歸
 ## 上架
 
 在 AMO 建立獨立 Firefox 項目，選擇桌面平台，提供 Firefox 隱私政策、截圖及審查步驟。若審查需要來源，提交此儲存庫原始碼及以上重建命令，不包含 `node_modules/`、`.qa/` 或使用者資料。固定 ID 不應在後續更新中更換。Chrome Web Store 項目與 Chrome 原始碼獨立保留。
+
+驗證範圍與待測清單：[TESTING.md](TESTING.md)。
