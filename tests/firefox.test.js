@@ -70,7 +70,7 @@ test('Firefox refuses a subtitle list after changing videos or closing the tab',
   assert.equal(app.downloads.length, 0);
 });
 
-test('Firefox build shares exact platform code and leaves Chrome manifest intact', async () => {
+test('Firefox build preserves shared assets and Firefox overrides without changing Chrome', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'subtitle-firefox-test-'));
   try {
     const original = await readFile(new URL('../extension/manifest.json', import.meta.url));
@@ -79,8 +79,11 @@ test('Firefox build shares exact platform code and leaves Chrome manifest intact
     assert.equal(manifest.browser_specific_settings.gecko.strict_min_version, '140.0');
     assert.equal(Object.hasOwn(manifest, 'host_permissions'), false);
     assert.equal(Object.hasOwn(manifest, 'minimum_chrome_version'), false);
-    for (const name of ['lib/text.js', 'lib/video.js', 'platforms/youtube.js', 'platforms/bilibili.js', 'popup.html', 'popup.css']) {
+    for (const name of ['lib/text.js', 'lib/video.js', 'platforms/bilibili.js', 'popup.html']) {
       assert.deepEqual(await readFile(join(directory, name)), await readFile(new URL(`../extension/${name}`, import.meta.url)));
+    }
+    for (const name of ['popup.css', 'platforms/youtube.js']) {
+      assert.deepEqual(await readFile(join(directory, name)), await readFile(new URL(`../firefox/${name}`, import.meta.url)));
     }
     assert.deepEqual(await readFile(new URL('../extension/manifest.json', import.meta.url)), original);
   } finally {

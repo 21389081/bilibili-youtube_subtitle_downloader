@@ -1,6 +1,6 @@
-// Serialized by chrome.scripting into the MAIN world. Keep this function self-contained.
+// Serialized by browser.scripting into the MAIN world. Keep this function self-contained.
 export async function youtubeRequest(request) {
-  let resourceObserver;
+  let resourceObserver, stopCapture;
   const fail = message => ({ ok: false, error: message });
   const currentId = () => {
     const url = new URL(location.href);
@@ -95,20 +95,100 @@ export async function youtubeRequest(request) {
         return node.textContent || '';
       });
     };
+    // A player URL may be stale or unusable when replayed. During a bounded
+    // reload, read a copy of the player's own matching response instead.
+    let capturedCues, lastError;
+    const pageFetch = typeof window.fetch === 'function' ? window.fetch.bind(window) : fetch;
+    const matchesTrack = value => {
+      try {
+        const url = safeUrl(String(value));
+        return url.searchParams.get('lang') === base.searchParams.get('lang')
+          && (url.searchParams.get('kind') || '') === (base.searchParams.get('kind') || '')
+          && (url.searchParams.get('name') || '') === (base.searchParams.get('name') || '')
+          && !url.searchParams.has('tlang');
+      } catch { return false; }
+    };
+    const startCapture = () => {
+      let active = true;
+      const originalFetch = window.fetch;
+      const prototype = window.XMLHttpRequest?.prototype;
+      const originalOpen = prototype?.open, originalSend = prototype?.send;
+      const urls = new WeakMap(), listeners = new Map();
+      const accept = (text, url) => {
+        if (!active || !matchesTrack(url)) return;
+        try {
+          ensureCurrent();
+          if (typeof text !== 'string' || text.length > 12_000_000) return;
+          const parsed = parse(text);
+          if (parsed?.some(cue => cue.trim())) capturedCues = parsed;
+        } catch (error) { lastError = error; }
+      };
+      function wrappedFetch(...args) {
+        const response = Reflect.apply(originalFetch, this, args);
+        const url = typeof args[0] === 'string' ? args[0] : args[0]?.url || String(args[0]);
+        if (matchesTrack(url)) {
+          Promise.resolve(response).then(result => {
+            const finalUrl = result.url || url;
+            if (active && result.ok && matchesTrack(finalUrl)) {
+              return result.clone().text().then(text => accept(text, finalUrl));
+            }
+          }).catch(() => { /* Never change the player's response or rejection. */ });
+        }
+        return response;
+      }
+      function wrappedOpen(method, url, ...rest) {
+        const result = Reflect.apply(originalOpen, this, [method, url, ...rest]);
+        if (matchesTrack(url)) urls.set(this, String(url));
+        else urls.delete(this);
+        return result;
+      }
+      function wrappedSend(...args) {
+        if (urls.has(this)) {
+          const onLoad = () => {
+            this.removeEventListener('load', onLoad);
+            listeners.delete(this);
+            const url = this.responseURL || urls.get(this);
+            if (this.status >= 200 && this.status < 300) {
+              try {
+                const text = this.responseType === 'json' ? JSON.stringify(this.response)
+                  : !this.responseType || this.responseType === 'text' ? this.responseText : '';
+                accept(text, url);
+              } catch { /* A non-text response is not a readable subtitle. */ }
+            }
+          };
+          listeners.set(this, onLoad);
+          this.addEventListener('load', onLoad, { once: true });
+        }
+        return Reflect.apply(originalSend, this, args);
+      }
+      stopCapture = () => {
+        active = false;
+        if (window.fetch === wrappedFetch) window.fetch = originalFetch;
+        if (prototype?.open === wrappedOpen) prototype.open = originalOpen;
+        if (prototype?.send === wrappedSend) prototype.send = originalSend;
+        for (const [xhr, listener] of listeners) xhr.removeEventListener('load', listener);
+        listeners.clear();
+      };
+      if (typeof originalFetch === 'function') window.fetch = wrappedFetch;
+      if (prototype && originalOpen && originalSend) {
+        prototype.open = wrappedOpen;
+        prototype.send = wrappedSend;
+      }
+    };
     const triedUrls = new Set();
     const fetchCues = async url => {
       ensureCurrent();
       const target = safeUrl(url.toString());
       if (triedUrls.has(target.href) || triedUrls.size >= 2) return null;
       triedUrls.add(target.href);
-      const result = await fetch(target.href, { credentials: 'include', signal: AbortSignal.timeout(10000) });
+      const result = await pageFetch(target.href, { credentials: 'include', signal: AbortSignal.timeout(10000) });
       if (!result.ok) throw new Error(`字幕取得失敗（HTTP ${result.status}），請稍後重試。`);
       const text = await result.text();
       if (text.length > 12_000_000) throw new Error('字幕檔過大，暫時無法處理。');
       ensureCurrent();
       return parse(text);
     };
-    let cues, lastError;
+    let cues;
     try { cues = await fetchCues(observedUrl() || base); } catch (error) { lastError = error; }
     if (!cues?.some(text => text.trim())) {
       // Ask the actual player for this track so its own session supplies subtitle verification.
@@ -118,14 +198,18 @@ export async function youtubeRequest(request) {
       const canSwitch = typeof player?.setOption === 'function' && typeof player?.getOption === 'function';
       if (canSwitch) {
         try {
+          startCapture();
           player.loadModule?.('captions');
           player.setOption('captions', 'track', {
             languageCode: selected.language, vss_id: selected.vssId,
             name: base.searchParams.get('name') || '', kind: selected.rawKind || '',
           });
-          for (let attempt = 0; attempt < 16; attempt++) {
+          // Selecting a track already enabled in the UI does not reload it.
+          player.setOption('captions', 'reload', true);
+          for (let attempt = 0; attempt < 32; attempt++) {
             await pause(250);
             ensureCurrent();
+            if (capturedCues) { cues = capturedCues; break; }
             const url = observedUrl();
             if (url) {
               try { cues = await fetchCues(url); } catch (error) { lastError = error; }
@@ -133,6 +217,7 @@ export async function youtubeRequest(request) {
             }
           }
         } finally {
+          stopCapture?.();
           if (currentId() === request.video.id) {
             player.setOption('captions', 'track', wasOn ? previous : {});
           }
@@ -141,11 +226,11 @@ export async function youtubeRequest(request) {
     }
     ensureCurrent();
     if (!cues?.some(text => text.trim())) {
-      return fail(lastError?.message || 'YouTube 未回傳字幕內容。請先在影片播放器開啟所選語言字幕，再重新搜尋下載。');
+      return fail(lastError?.message || '播放器未提供可讀取的字幕內容。請重新整理影片後重試；若仍失敗，請回報影片網址與所選字幕語言。');
     }
     return { ok: true, data: { title, language: selected.language, cues } };
   } catch (error) {
     if (['TimeoutError', 'AbortError'].includes(error?.name)) return fail('字幕請求逾時，請稍後重試。');
     return fail(error?.message === 'Failed to fetch' ? '無法連線至 YouTube，請檢查網路後重試。' : error?.message || 'YouTube 字幕取得失敗。');
-  } finally { resourceObserver?.disconnect(); }
+  } finally { stopCapture?.(); resourceObserver?.disconnect(); }
 }

@@ -3,8 +3,8 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const sharedFirefoxFiles = [
-  'popup.html', 'popup.css', 'lib/text.js', 'lib/video.js',
-  'platforms/youtube.js', 'platforms/bilibili.js',
+  'popup.html', 'lib/text.js', 'lib/video.js',
+  'platforms/bilibili.js',
   'icons/icon-16.png', 'icons/icon-32.png', 'icons/icon-48.png', 'icons/icon-128.png',
 ];
 const root = new URL('../', import.meta.url);

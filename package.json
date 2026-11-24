@@ -12,7 +12,8 @@
     "package:firefox": "node scripts/package-firefox.mjs",
     "check:firefox": "node scripts/check-firefox.mjs",
     "lint:firefox": "node scripts/build-firefox.mjs && node node_modules/web-ext/bin/web-ext.js lint --source-dir dist/firefox --warnings-as-errors",
-    "sync:firefox": "node scripts/sync-firefox-assets.mjs"
+    "sync:firefox": "node scripts/sync-firefox-assets.mjs",
+    "test:firefox-layout": "node tests/firefox-layout.e2e.cjs"
   },
   "devDependencies": {
     "playwright": "1.62.1",

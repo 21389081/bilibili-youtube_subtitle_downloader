@@ -16,7 +16,7 @@ export async function buildFirefox(output = firefoxOutput) {
   await syncFirefoxAssets();
   const manifest = JSON.parse(await readFile(new URL('firefox/manifest.json', root), 'utf8'));
   // Firefox patch versions are independent of the published Chrome version.
-  for (const name of ['manifest.json', 'background.js', 'popup.js', ...sharedFirefoxFiles]) {
+  for (const name of ['manifest.json', 'background.js', 'popup.js', 'popup.css', 'platforms/youtube.js', ...sharedFirefoxFiles]) {
     const destination = resolve(output, name);
     await mkdir(dirname(destination), { recursive: true });
     await copyFile(resolve(source, name), destination);

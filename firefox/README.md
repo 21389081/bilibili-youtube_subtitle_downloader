@@ -7,7 +7,7 @@ Firefox 140+，也供相容版本的 Zen Browser 使用。Chrome 正式版原始
 - `firefox/manifest.json`：Firefox Manifest V3、固定擴充功能 ID、資料傳輸聲明。
 - `firefox/background.js`、`firefox/popup.js`：使用 Firefox Promise API 的瀏覽器入口。
 - `firefox/` 是完整可載入的擴充功能資料夾，包含彈窗 HTML、CSS、圖示與模組；可在乾淨 checkout 直接選取 `firefox/manifest.json`，不必先打包。
-- 平台擷取、文字轉換、影片識別、HTML、CSS 與圖示以 `extension/` 為來源，在 `firefox/` 保留相同副本。`npm.cmd run sync:firefox` 可同步共用檔案，打包時亦會同步既有檔案，且不會修改 Chrome 來源；Firefox 專用入口不會被覆蓋。
+- Bilibili 擷取、文字轉換、影片識別、HTML 與圖示以 `extension/` 為來源，在 `firefox/` 保留相同副本。YouTube 擷取及彈窗 CSS 是 Firefox 專用版本，不受同步命令覆蓋。`npm.cmd run sync:firefox` 可同步共用檔案，打包時亦會同步既有檔案，且不會修改 Chrome 來源；Firefox 專用入口不會被覆蓋。
 - `dist/firefox/` 是完整可載入資料夾，由打包腳本產生，不提交到 Git。
 - `gecko_android` 最低版本僅避免資料聲明相容性警告；本版本尚未驗收 Android，上架時只選桌面平台。
 
@@ -17,10 +17,11 @@ npm.cmd test
 npm.cmd run check
 npm.cmd run check:firefox
 npm.cmd run lint:firefox
+npm.cmd run test:firefox-layout
 npm.cmd run package:firefox
 ```
 
-ZIP：`dist/subtitle-text-downloader-firefox-0.1.2.zip`。壓縮檔根目錄直接包含 `manifest.json`。
+ZIP：`dist/subtitle-text-downloader-firefox-0.1.3.zip`。壓縮檔根目錄直接包含 `manifest.json`。
 
 ## 暫時載入與 Zen 測試
 
@@ -50,4 +51,6 @@ Firefox 私密視窗下載會帶入 `incognito: true`，使該筆下載紀錄歸
 
 驗證範圍與待測清單：[TESTING.md](TESTING.md)。
 
-Firefox 修補版本獨立管理；本次 Firefox 0.1.2 不改動 Chrome 0.1.1。先前已從 `firefox/manifest.json` 暫時載入的使用者，在 `about:debugging` 點「重新載入」即可讀取補齊的檔案。
+Firefox 修補版本獨立管理；目前 Firefox 0.1.3 不改動 Chrome 0.1.1。先前已從 `firefox/manifest.json` 暫時載入的使用者，在 `about:debugging` 點「重新載入」即可讀取補齊的檔案。
+
+Firefox 0.1.3 修正字幕已開啟時的重新載入及讀取流程，錯誤訊息可換行，過長內容可在彈窗內捲動閱讀。

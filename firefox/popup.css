@@ -29,7 +29,8 @@ main {
     flex-direction: column;
     height: 100%;
     padding: 24px;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 header {
     flex: 0 0 auto;
@@ -77,7 +78,7 @@ h2 {
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
-    min-height: 0;
+    min-height: 164px;
     padding-top: 12px;
 }
 fieldset {
@@ -194,15 +195,14 @@ input:focus-visible {
     outline-offset: 3px;
 }
 #status {
-    flex: 0 0 36px;
-    height: 36px;
-    overflow: hidden;
+    flex: 0 0 auto;
+    min-height: 36px;
+    overflow: visible;
     padding: 10px 0 0;
     overflow-wrap: anywhere;
     font-size: 13px;
     line-height: 1.5;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    white-space: pre-wrap;
 }
 #status.is-empty {
     visibility: hidden;
