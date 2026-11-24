@@ -59,4 +59,4 @@ Chromium 自動測試使用暫存副本授予指定兩站的網站權限，以�
 
 ## Firefox / Zen 桌面版
 
-Firefox 版本已新增獨立來源與打包流程，Chrome 的 `extension/` 原始碼和原有打包命令保留不變。請參閱 [Firefox 安裝、驗證與上架說明](firefox/README.md) 及 [Firefox 隱私政策](firefox/PRIVACY.md)。
+Firefox 0.1.4 已由專案擁有者實機確認正常，提供獨立來源與打包流程；Chrome 的 `extension/` 原始碼和原有打包命令保留不變。請參閱 [Firefox 安裝、驗證與上架說明](firefox/README.md) 及 [Firefox 隱私政策](firefox/PRIVACY.md)。

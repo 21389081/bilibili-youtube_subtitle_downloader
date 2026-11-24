@@ -2,6 +2,12 @@
 
 日期：2026-11-24。
 
+## 最終驗收
+
+專案擁有者已在實際瀏覽器測試 Firefox 0.1.4，於 2026-11-24 確認「firefox版本正常」，並授權推送 PR 及合併。以下保留開發期間的重現、修正與自動驗證紀錄；使用者驗收結論為 0.1.4 可正常運作。
+
+Chrome 0.1.1 的 13 個原始檔保持不變；Firefox 0.1.4 通過 35 項測試與 Mozilla lint 零錯誤、零警告。
+
 ## 已完成
 
 - Node.js 24.16.0；web-ext 10.8.0。
@@ -14,9 +20,9 @@
 - Firefox ZIP 根目錄包含 `manifest.json`，所有檔案與建置輸出相同。
 - Zen 1.24.3b（Gecko 160.0.1）的獨立測試設定檔已成功暫時載入此擴充功能，私密視窗已開啟。使用者已手動允許私密視窗執行。
 
-## 尚待使用者實測
+## 實機測試清單
 
-依使用者要求，後續瀏覽器測試由使用者自行進行。本次沒有完成真實 YouTube / Bilibili 字幕下載驗證；自動測試與暫時載入成功不代表實際平台下載已通過。
+依使用者要求，實際瀏覽器測試由使用者自行進行。以下為原驗收清單，Firefox 0.1.4 的最終使用者確認已記錄於上方。
 
 開啟支援的影片後，按 `Alt+Shift+Y` 或點擴充功能按鈕，再點「開始下載」。
 
@@ -75,6 +81,6 @@ Error: Missing extension file: popup.html (referenced by manifest.json)
 - 下載完成、中斷、移除紀錄或建立下載失敗時釋放 Blob URL，下載進行中不提前釋放。
 - 使用完成事件及依 ID 查詢處理「下載在 download() 回傳 ID 前已完成」的競態。
 
-35 項測試通過，包含拒絕 data URL 的回歸、一般／私密下載、Blob 實際編碼位元組、完成前保留、失敗／中斷／移除釋放與提早完成競態。Mozilla lint 零錯誤、零警告。依既有要求未操作使用者瀏覽器；目前工作階段的實際檔案下載仍由使用者驗收。
+35 項測試通過，包含拒絕 data URL 的回歸、一般／私密下載、Blob 實際編碼位元組、完成前保留、失敗／中斷／移除釋放與提早完成競態。Mozilla lint 零錯誤、零警告。依既有要求未操作使用者瀏覽器；使用者隨後已確認 Firefox 0.1.4 正常運作。
 
 官方依據：[downloads.download](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/downloads/download) 說明 Blob URL 下載與完成後釋放；[Mozilla bug 1696174](https://bugzilla.mozilla.org/show_bug.cgi?id=1696174) 說明 Blob URL 應在擴充功能背景頁建立，避免網站來源 Blob URL 被拒絕。Chrome 原始碼及其原有 data URL 路徑保持不變。
